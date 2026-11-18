@@ -84,7 +84,7 @@ export function LoginDemo() {
     <Stage
       id="login-form"
       title="Login form"
-      summary="A sign-in can succeed, reject the credentials, or lock the account. Offline, the email and password stay in the form until the connection returns."
+      summary="A sign-in can open the account, reject the credentials, or lock it. Offline, the email and password stay in the form until the connection returns."
       states={loginStates}
       state={state}
       onJump={jump}
@@ -105,8 +105,8 @@ export function LoginDemo() {
           >
             Unlock account
           </button>
-          <label htmlFor={outcomeId} className="flex items-center gap-2 text-sm">
-            Next sign-in
+          <label htmlFor={outcomeId} className="flex items-center gap-2 text-sm whitespace-nowrap">
+            If you sign in
             <select
               id={outcomeId}
               value={outcome}
@@ -115,10 +115,10 @@ export function LoginDemo() {
                 outcomeRef.current = next;
                 setOutcome(next);
               }}
-              className="h-11 cursor-pointer rounded-md border border-border bg-background px-3 text-base text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className="h-8 cursor-pointer rounded-md border border-border bg-background px-2 text-sm text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
             >
               <option value="success">Succeeds</option>
-              <option value="invalid">Rejects the password</option>
+              <option value="invalid">Wrong password</option>
               <option value="locked">Locks the account</option>
             </select>
           </label>

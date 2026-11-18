@@ -1,8 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CircleAlert, CloudOff, LoaderCircle } from "lucide-react";
-import { useId, useRef, useState, type FormEvent } from "react";
+import { CircleAlert, CircleCheck, CloudOff, LoaderCircle } from "lucide-react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { type LoginEvent, type LoginState } from "./machine";
 
 const statusEase = [0.19, 1, 0.22, 1] as const;
@@ -22,8 +22,8 @@ const fieldClass =
 const primaryButton =
   "inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm whitespace-nowrap transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hoverable:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-auto sm:min-w-32";
 
-const quietButton =
-  "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto";
+const compactButton =
+  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-2.5 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96]";
 
 function emailProblem(value: string) {
   const email = value.trim();
@@ -65,6 +65,8 @@ export function LoginForm({
   const statusId = useId();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const signedInRef = useRef<HTMLDivElement>(null);
+  const previousState = useRef(state);
   const [visible, setVisible] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -74,7 +76,13 @@ export function LoginForm({
     setEmailError(null);
     setPasswordError(null);
   }
-  const frozen = state === "submitting" || state === "success" || state === "locked";
+  useEffect(() => {
+    if (state === "success") signedInRef.current?.focus();
+    else if (previousState.current === "success") emailRef.current?.focus();
+    previousState.current = state;
+  }, [state]);
+
+  const frozen = state === "submitting" || state === "locked";
   const canSubmit = state === "empty" || state === "invalid";
   const message = statusMessage(state, email);
   const emailDescribedBy = [emailError ? emailErrorId : null, statusId]
@@ -104,6 +112,36 @@ export function LoginForm({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     requestSubmit();
+  }
+
+  if (state === "success") {
+    const account = email.trim();
+    return (
+      <motion.div
+        ref={signedInRef}
+        tabIndex={-1}
+        role="status"
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: statusEase }}
+        className="flex w-full max-w-xl flex-col items-start gap-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      >
+        <p className="flex items-center gap-2 text-sm text-success">
+          <CircleCheck className="pointer-events-none size-4 shrink-0" aria-hidden />
+          Signed in
+        </p>
+        <p className="truncate font-serif text-2xl font-normal tracking-[-0.015em]">
+          {account || "You’re in."}
+        </p>
+        <button
+          type="button"
+          onClick={() => onEvent({ type: "RESET" })}
+          className={compactButton}
+        >
+          Sign out
+        </button>
+      </motion.div>
+    );
   }
 
   return (
@@ -233,22 +271,9 @@ export function LoginForm({
             ) : null}
           </AnimatePresence>
         </div>
-        {state === "success" ? (
-          <button
-            type="button"
-            onClick={() => {
-              onEvent({ type: "RESET" });
-              emailRef.current?.focus();
-            }}
-            className={quietButton}
-          >
-            Use a different account
-          </button>
-        ) : (
-          <button type="submit" disabled={!canSubmit} className={primaryButton}>
-            {state === "submitting" ? "Signing in…" : state === "invalid" ? "Try again" : "Sign in"}
-          </button>
-        )}
+        <button type="submit" disabled={!canSubmit} className={primaryButton}>
+          {state === "invalid" ? "Try again" : "Sign in"}
+        </button>
       </div>
     </form>
   );

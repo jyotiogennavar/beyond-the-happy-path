@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import {
   useEffect,
   useRef,
@@ -36,6 +36,9 @@ const primaryButton =
 
 const quietButton =
   "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto sm:min-w-36";
+
+const compactButton =
+  "inline-flex h-8 shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-2.5 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96]";
 
 function formatBytes(bytes: number) {
   const kilobytes = bytes / 1024;
@@ -121,6 +124,7 @@ function zoneCopy(
 
 function borderClass(state: UploadState, dragging: boolean) {
   if (dragging || state === "selecting") return "border-foreground";
+  if (state === "success") return "border-success-border";
   if (state === "invalid" || state === "error") return "border-danger-border";
   return "border-border";
 }
@@ -207,13 +211,13 @@ export function FileUpload({
 
   const action =
     state === "uploading"
-      ? { label: "Cancel", event: { type: "CANCEL" } as const, quiet: true }
+      ? { label: "Cancel", event: { type: "CANCEL" } as const, className: quietButton }
       : state === "error"
-        ? { label: "Retry", event: { type: "RETRY" } as const, quiet: false }
+        ? { label: "Retry", event: { type: "RETRY" } as const, className: primaryButton }
         : state === "cancelled"
-          ? { label: "Upload again", event: { type: "RETRY" } as const, quiet: false }
+          ? { label: "Upload again", event: { type: "RETRY" } as const, className: primaryButton }
           : state === "success"
-            ? { label: "Upload another", event: { type: "RESET" } as const, quiet: false }
+            ? { label: "Upload another", event: { type: "RESET" } as const, className: compactButton }
             : null;
 
   return (
@@ -299,9 +303,16 @@ export function FileUpload({
                   exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
                   transition={{ duration: 0.18, ease: statusEase }}
                   className={`flex items-start gap-2 text-sm ${
-                    state === "error" ? "text-danger" : "text-muted"
+                    state === "error"
+                      ? "text-danger"
+                      : state === "success"
+                        ? "text-success"
+                        : "text-muted"
                   }`}
                 >
+                  {state === "success" ? (
+                    <CircleCheck className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
+                  ) : null}
                   {state === "error" ? (
                     <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
                   ) : null}
@@ -325,7 +336,7 @@ export function FileUpload({
               <button
                 type="button"
                 onClick={() => onEvent(action.event)}
-                className={action.quiet ? quietButton : primaryButton}
+                className={action.className}
               >
                 {action.label}
               </button>
