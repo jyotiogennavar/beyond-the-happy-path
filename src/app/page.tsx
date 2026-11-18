@@ -7,7 +7,7 @@ export default function Home() {
   );
 
   return (
-    <main className="mx-auto flex w-full max-w-200 flex-1 flex-col gap-16 px-6 py-16">
+    <main className="mx-auto flex w-full max-w-200 flex-1 flex-col gap-16 pt-16 pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(4rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
       <header className="flex flex-col gap-4">
         <h1 className="text-balance font-serif text-2xl font-normal leading-[1.1] tracking-[-0.015em] sm:text-5xl">
           Beyond the happy path.
@@ -26,7 +26,7 @@ export default function Home() {
         >
           <h2
             id={family.id}
-            className="font-sans text-xs font-medium tracking-[0.14em] text-muted uppercase"
+            className="text-balance font-sans text-xs font-medium tracking-[0.14em] text-muted uppercase"
           >
             {family.label}
           </h2>

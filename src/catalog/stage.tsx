@@ -36,7 +36,7 @@ export function Stage<S extends string>({
         <header className="flex max-w-prose flex-col gap-2">
           <h3
             id={titleId}
-            className="font-sans text-2xl font-normal tracking-[-0.015em]"
+            className="text-balance font-sans text-2xl font-normal tracking-[-0.015em]"
           >
             {title}
           </h3>
@@ -59,10 +59,10 @@ export function Stage<S extends string>({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => onJump(item)}
-                    className={`h-11 cursor-pointer border-b px-3 text-sm transition-[color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${
+                    className={`h-11 cursor-pointer border-b px-3 text-sm transition-[color,border-color,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] ${
                       selected
                         ? "border-foreground text-foreground"
-                        : "border-transparent text-muted hover:text-foreground"
+                        : "border-transparent text-muted hoverable:text-foreground"
                     }`}
                   >
                     {stateLabel(item)}

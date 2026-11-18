@@ -120,7 +120,7 @@ export function NoteEditor({
         className={`w-full resize-y rounded-lg border bg-background px-3 py-3 font-serif text-base leading-relaxed text-foreground transition-[border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${
           invalid
             ? "border-danger-border"
-            : "border-border hover:border-foreground/25"
+            : "border-border hoverable:border-foreground/25"
         }${className ? ` ${className}` : ""}`}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -138,15 +138,15 @@ export function NoteEditor({
             >
               {state === "saving" ? (
                 <LoaderCircle
-                  className="mt-0.5 size-4 shrink-0 motion-safe:animate-spin"
+                  className="pointer-events-none mt-0.5 size-4 shrink-0 motion-safe:animate-spin"
                   aria-hidden
                 />
               ) : null}
               {state === "error" ? (
-                <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
               ) : null}
               {state === "offline" ? (
-                <CloudOff className="mt-0.5 size-4 shrink-0" aria-hidden />
+                <CloudOff className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
               ) : null}
               <span>
                 {statusMessage(state, pending)}
@@ -160,7 +160,7 @@ export function NoteEditor({
         <button
           type="submit"
           disabled={!canSave}
-          className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hover:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-36"
+          className="inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hoverable:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-36"
         >
           {saveLabel(state)}
         </button>

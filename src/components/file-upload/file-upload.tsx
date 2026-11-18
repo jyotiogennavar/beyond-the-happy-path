@@ -32,10 +32,10 @@ type FileUploadProps = {
 };
 
 const primaryButton =
-  "inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hover:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-auto";
+  "inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm whitespace-nowrap transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hoverable:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-auto sm:min-w-36";
 
 const quietButton =
-  "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm transition-[transform,background-color] duration-150 ease-out hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto";
+  "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto sm:min-w-36";
 
 function formatBytes(bytes: number) {
   const kilobytes = bytes / 1024;
@@ -228,7 +228,7 @@ export function FileUpload({
         {liveMessage(state, reason)}
       </p>
       {zone ? (
-        <label className="flex cursor-pointer flex-col gap-1 px-3 py-4 text-left">
+        <label className="flex min-h-[9.5rem] cursor-pointer flex-col justify-center gap-1 px-3 py-4 text-left sm:min-h-[7.25rem]">
           <input
             ref={fileInput}
             type="file"
@@ -246,7 +246,7 @@ export function FileUpload({
             className={`flex items-start gap-2 text-sm ${copy.danger ? "text-danger" : "text-muted"}`}
           >
             {copy.danger ? (
-              <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+              <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
             ) : null}
             <span>{copy.detail}</span>
           </span>
@@ -303,9 +303,21 @@ export function FileUpload({
                   }`}
                 >
                   {state === "error" ? (
-                    <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                    <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
                   ) : null}
-                  <span className="tabular-nums">{statusCopy(state, clamped)}</span>
+                  <span className="tabular-nums">
+                    {state === "uploading" ? (
+                      <>
+                        Uploading…{" "}
+                        <span className="inline-block w-[3ch] text-right">
+                          {Math.round(clamped)}
+                        </span>
+                        {"%"}
+                      </>
+                    ) : (
+                      statusCopy(state, clamped)
+                    )}
+                  </span>
                 </motion.p>
               </AnimatePresence>
             </div>

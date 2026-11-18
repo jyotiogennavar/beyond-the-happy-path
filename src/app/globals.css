@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
-@custom-variant hoverable (@media (hover: hover) and (pointer: fine));
+@custom-variant hoverable {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
 
 :root {
   --background: #ffffff;

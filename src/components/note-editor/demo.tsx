@@ -78,7 +78,7 @@ export function NoteDemo() {
           <button
             type="button"
             onClick={toggleConnection}
-            className="inline-flex h-11 cursor-pointer items-center rounded-md border border-border px-3 text-sm transition-[transform,background-color] duration-150 ease-out hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96]"
+            className="inline-flex h-11 min-w-28 cursor-pointer items-center justify-center rounded-md border border-border px-3 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96]"
           >
             {state === "offline" ? "Reconnect" : "Go offline"}
           </button>

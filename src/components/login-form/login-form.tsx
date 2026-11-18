@@ -20,10 +20,10 @@ const fieldClass =
   "w-full rounded-lg border bg-background px-3 py-3 text-base text-foreground transition-[border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 const primaryButton =
-  "inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hover:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-auto";
+  "inline-flex h-11 w-full shrink-0 items-center justify-center rounded-md border px-4 text-sm whitespace-nowrap transition-[transform,color,background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:cursor-pointer enabled:border-foreground enabled:bg-foreground enabled:text-background enabled:hoverable:bg-[color-mix(in_oklch,var(--foreground)_88%,var(--background))] motion-safe:enabled:active:scale-[0.96] disabled:border-border disabled:text-muted sm:w-auto sm:min-w-32";
 
 const quietButton =
-  "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm transition-[transform,background-color] duration-150 ease-out hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto";
+  "inline-flex h-11 w-full shrink-0 cursor-pointer items-center justify-center rounded-md border border-border px-4 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out hoverable:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] sm:w-auto";
 
 function emailProblem(value: string) {
   const email = value.trim();
@@ -140,12 +140,12 @@ export function LoginForm({
           className={`${fieldClass} ${
             emailError || state === "invalid"
               ? "border-danger-border"
-              : "border-border hover:border-foreground/25"
+              : "border-border hoverable:border-foreground/25"
           }`}
         />
         {emailError ? (
           <p id={emailErrorId} className="flex items-start gap-2 text-sm text-danger">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
             {emailError}
           </p>
         ) : null}
@@ -178,7 +178,7 @@ export function LoginForm({
             className={`${fieldClass} pr-16 ${
               passwordError || state === "invalid"
                 ? "border-danger-border"
-                : "border-border hover:border-foreground/25"
+                : "border-border hoverable:border-foreground/25"
             }`}
           />
           <button
@@ -187,7 +187,7 @@ export function LoginForm({
             aria-label={visible ? "Hide password" : "Show password"}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => setVisible((current) => !current)}
-            className="absolute inset-y-0 right-0 flex w-16 cursor-pointer items-center justify-center text-sm text-muted transition-colors duration-150 ease-out hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            className="absolute inset-y-0 right-0 flex w-16 cursor-pointer items-center justify-center text-sm text-muted transition-[color,transform] duration-150 ease-out hoverable:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96]"
           >
             {visible ? "Hide" : "Show"}
           </button>
@@ -197,7 +197,7 @@ export function LoginForm({
             id={passwordErrorId}
             className="flex items-start gap-2 text-sm text-danger"
           >
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
             {passwordError}
           </p>
         ) : null}
@@ -218,15 +218,15 @@ export function LoginForm({
               >
                 {state === "submitting" ? (
                   <LoaderCircle
-                    className="mt-0.5 size-4 shrink-0 motion-safe:animate-spin"
+                    className="pointer-events-none mt-0.5 size-4 shrink-0 motion-safe:animate-spin"
                     aria-hidden
                   />
                 ) : null}
                 {state === "invalid" || state === "locked" ? (
-                  <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />
+                  <CircleAlert className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
                 ) : null}
                 {state === "offline" ? (
-                  <CloudOff className="mt-0.5 size-4 shrink-0" aria-hidden />
+                  <CloudOff className="pointer-events-none mt-0.5 size-4 shrink-0" aria-hidden />
                 ) : null}
                 <span>{message}</span>
               </motion.p>

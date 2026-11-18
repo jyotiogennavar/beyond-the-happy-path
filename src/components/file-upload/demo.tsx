@@ -133,7 +133,7 @@ export function FileUploadDemo() {
             type="button"
             onClick={() => begin(sampleFile)}
             disabled={state === "uploading" || state === "processing"}
-            className="inline-flex h-11 cursor-pointer items-center rounded-md border border-border px-3 text-sm transition-[transform,background-color] duration-150 ease-out hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground motion-safe:active:scale-[0.96] disabled:cursor-not-allowed disabled:text-muted disabled:hover:bg-transparent"
+            className="inline-flex h-11 cursor-pointer items-center rounded-md border border-border px-3 text-sm whitespace-nowrap transition-[transform,background-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground enabled:hoverable:bg-foreground/5 motion-safe:active:scale-[0.96] disabled:cursor-not-allowed disabled:text-muted"
           >
             Upload a sample
           </button>
