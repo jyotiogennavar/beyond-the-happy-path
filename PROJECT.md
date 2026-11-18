@@ -5,7 +5,7 @@ The useful constraint is: **each component should have a meaningful state transi
 For each component, we can model something like:
 
 `idle → loading → success`
-  
+
 `idle → loading → error → retry → loading`
 
 and where relevant:
@@ -18,24 +18,15 @@ and where relevant:
 |---|---|---|
 | **Note editor** | Idle, typing, saving, saved, error, offline | `typing → saving → saved` |
 | **File upload** | Empty, selecting, uploading, success, error, cancelled | `uploading → error → retry` |
-| **Search** | Idle, typing, searching, results, no results, error, offline | `typing → searching → results` |
 | **Login form** | Empty, submitting, success, invalid, locked, offline | `submit → error → retry` |
 | **Payment button** | Ready, processing, success, failed, cancelled | `processing → success` |
-| **Checkout** | Cart, validating, processing, success, payment error | `checkout → processing → success` |
-| **Like button** | Unliked, liking, liked, unliking, error, offline | `unliked → liking → liked` |
-| **Follow button** | Follow, following, unfollowing, error | `follow → following` |
-| **Subscribe button** | Idle, processing, subscribed, failed | `idle → processing → subscribed` |
+| **Checkout** | Cart, validating, processing, success, payment error, timed out | `processing → timed out` |
 | **Newsletter form** | Empty, submitting, subscribed, already subscribed, error | `submit → success` |
 | **Contact form** | Empty, validating, submitting, success, error | `validate → submit → success` |
-| **Comment box** | Empty, typing, posting, posted, error, offline | `typing → posting → posted` |
-| **Chat message** | Draft, sending, sent, delivered, read, failed | `sending → sent → delivered → read` |
-| **Chat composer** | Empty, typing, recording, attaching, sending | multiple concurrent states |
-| **Notification** | Unread, reading, read, archived, failed | `unread → read → archived` |
 | **Data table** | Loading, loaded, empty, error, refreshing, offline | `loaded → refreshing → loaded` |
-| **Infinite list** | Loading, loaded, loading-more, end, error | `loaded → loading-more → loaded` |
+| **Infinite list** | Loading, loaded, loading-more, end, error | `loading-more → error` |
 | **Pagination** | Loading, page loaded, error, disabled | `page 1 → page 2 → error` |
 | **Filter panel** | Closed, open, applying, applied, error | `editing → applying → applied` |
-| **Sort control** | Default, ascending, descending, loading | `default → asc → desc` |
 | **Dashboard card** | Loading, populated, empty, error, stale | `stale → refreshing → fresh` |
 | **API data card** | Loading, success, error, retrying, offline | `error → retrying → success` |
 | **Avatar upload** | Empty, selecting, uploading, success, error | `select → upload → success` |
@@ -44,46 +35,46 @@ and where relevant:
 | **2FA input** | Empty, typing, verifying, success, invalid, expired | `input → verify → success` |
 | **Invite member** | Empty, sending, invited, already member, error | `send → invited` |
 | **Delete confirmation** | Closed, confirming, deleting, deleted, error | `confirm → deleting → deleted` |
-| **Undo action** | Action performed, undo available, undoing, restored | `delete → undo → restored` |
-| **Copy button** | Ready, copying, copied, error | `ready → copying → copied` |
-| **Share button** | Ready, opening, shared, cancelled, error | `share → success` |
-| **Download button** | Ready, preparing, downloading, complete, failed | `prepare → download → complete` |
+| **Undo action** | Action performed, undo available, undoing, restored, expired | `delete → undo → restored` |
 
-## Some more interesting ones
+## Five to build next
 
-These are particularly good for your **design-engineering/state-machine** angle because the states aren't merely `loading/error/success`.
+Search, like, follow, subscribe, comment, chat, notification, sort, copy, share, and download are short transitions: idle, in flight, done. They rarely fail halfway. These five do. The bug is usually a second outcome arriving while the first is still on screen — a timeout after a charge, a cancelled upload that also succeeds, an older response landing last, a failed next page wiping rows you already have, an undo that restores the wrong row.
 
-### 1. Optimistic like
+### 1. Checkout
 
-```text
-UNLIKED
-   ↓
-LIKING
-   ↓
-LIKED
-   ↓
-UNLIKING
-   ↓
-UNLIKED
-```
-
-But introduce a failure:
+A payment button is ready, processing, success. Checkout fails in the middle, and the failures are not interchangeable.
 
 ```text
-LIKING
-   ↓
-LIKE_FAILED
-   ↓
-UNLIKED
+CART
+ ↓
+VALIDATING
+ ↓
+PROCESSING
+ ↓
+COMPLETE
 ```
 
-Visually, this gives you room for an optimistic heart animation, rollback, error feedback, etc.
+Branches:
+
+```text
+VALIDATING → INVALID (cart stays, one field is wrong)
+PROCESSING → DECLINED (nothing was charged)
+PROCESSING → TIMED_OUT (the charge may already have happened)
+PROCESSING → STOCK_CONFLICT (payment captured, order not placed)
+```
+
+And:
+
+```text
+PROCESSING → second submit (should no-op; often places a second order)
+```
+
+Timed out and declined need different retries. Retrying a timeout can charge the card twice.
 
 ---
 
 ### 2. File upload
-
-Probably one of the best components for this project.
 
 ```text
 EMPTY
@@ -100,101 +91,23 @@ SUCCESS
 Alternative paths:
 
 ```text
+EMPTY → INVALID_FILE
 UPLOADING → CANCELLED
 UPLOADING → ERROR → RETRY → UPLOADING
 ```
 
-And:
+The race worth designing:
 
 ```text
-EMPTY → INVALID_FILE
+UPLOADING → CANCEL
+and SUCCESS arriving on the same tick
 ```
 
-You can explore progress, speed, cancellation, retry, validation and completion animations.
+One of those has to win. Success after a cancel, or "cancelled" after the file is already stored, are both easy to ship. Retry has the same shape: the first request may have stored the file before the error came back.
 
 ---
 
-### 3. Search
-
-More interesting than it initially looks.
-
-```text
-IDLE
- ↓
-TYPING
- ↓
-SEARCHING
- ↓
-RESULTS
-```
-
-Branches:
-
-```text
-SEARCHING → ERROR
-SEARCHING → NO_RESULTS
-SEARCHING → OFFLINE
-```
-
-And:
-
-```text
-NO_RESULTS → TYPING → SEARCHING → RESULTS
-```
-
-This gives you a nice opportunity to animate the transition between **empty → searching → result** rather than simply swapping content.
-
----
-
-### 4. Chat message
-
-A particularly good one for state machines.
-
-```text
-DRAFT
- ↓
-SENDING
- ↓
-SENT
- ↓
-DELIVERED
- ↓
-READ
-```
-
-Failure:
-
-```text
-SENDING
- ↓
-FAILED
- ↓
-RETRYING
- ↓
-SENT
-```
-
-Offline:
-
-```text
-DRAFT
- ↓
-QUEUED_OFFLINE
- ↓
-ONLINE
- ↓
-SENDING
- ↓
-SENT
-```
-
-This could become a very nice animation because the **same message changes state over time**.
-
----
-
-### 5. Data table
-
-Instead of treating the table as just a loading skeleton:
+### 3. Data table
 
 ```text
 INITIAL
@@ -210,7 +123,6 @@ Then:
 LOADED
  ├── REFRESHING → LOADED
  ├── FILTERING → LOADED
- ├── SORTING → LOADED
  └── PAGINATING → LOADED
 ```
 
@@ -218,15 +130,80 @@ Failure:
 
 ```text
 LOADING → ERROR → RETRYING → LOADED
-```
-
-And:
-
-```text
 LOADED → OFFLINE → STALE_DATA
 ```
 
-That last state is particularly interesting from a product-design perspective.
+The easy bug is an older request resolving last:
+
+```text
+FILTERING (request A)
+FILTERING (request B starts, A still in flight)
+B returns → LOADED
+A returns → LOADED (wrong rows, unless A is discarded)
+```
+
+Empty, error, and stale-offline are different states. A failed refresh should keep the rows on screen. A failed first load should not look like an empty table.
+
+---
+
+### 4. Infinite list
+
+```text
+LOADING
+ ↓
+LOADED
+ ↓
+LOADING_MORE
+ ↓
+LOADED
+```
+
+End and failure:
+
+```text
+LOADED → END
+LOADING_MORE → ERROR (rows already loaded stay)
+```
+
+Ways this breaks:
+
+```text
+LOADING_MORE → ERROR that replaces the list with an empty error
+page 2 overlaps page 1 → duplicate rows
+an empty body from a 500 → shown as END
+REFRESH resolves after LOADING_MORE → the list jumps backward
+```
+
+The appended page and the existing pages are one list. A failure on page three cannot reset pages one and two.
+
+---
+
+### 5. Delete with undo
+
+```text
+CLOSED
+ ↓
+CONFIRMING
+ ↓
+DELETING
+ ↓
+DELETED
+ ↓
+UNDO_AVAILABLE
+ ↓
+RESTORING
+ ↓
+RESTORED
+```
+
+The window closes on its own:
+
+```text
+UNDO_AVAILABLE → EXPIRED (the server commit won)
+RESTORING → RESTORE_FAILED (the row is not back, even though the UI said it was)
+```
+
+The awkward case is a second action inside the window: deleting another row, or reordering, while the first undo is in flight. The restored row comes back at the index from before that second action. Expired and restore-failed also have to look different from "you didn't click undo."
 
 ---
 
@@ -240,34 +217,29 @@ Rather than making 30 unrelated components, I'd create **families of patterns**.
 |---|---|
 | Note | Create → Save → Saved → Error |
 | Profile | Edit → Save → Saved → Error |
-| Comment | Draft → Post → Posted → Error |
-| Delete | Confirm → Delete → Deleted → Error |
+| Delete | Confirm → Delete → Deleted → Undo → Restored / Expired |
 
 ### 02 — Async actions
 
 | Component | States |
 |---|---|
 | Button | Idle → Loading → Success/Error |
-| Copy | Ready → Copying → Copied |
-| Download | Ready → Preparing → Downloading → Complete |
-| Share | Ready → Sharing → Shared |
+| Upload | Uploading → Success / Cancelled / Error → Retry |
+| Checkout | Processing → Declined / Timed out / Stock conflict |
 
 ### 03 — Data fetching
 
 | Component | States |
 |---|---|
-| Search | Idle → Searching → Results/Empty/Error |
-| Table | Loading → Loaded/Empty/Error |
+| Table | Loading → Loaded/Empty/Error, discard stale responses |
 | Dashboard card | Loading → Fresh/Stale/Error |
-| Infinite list | Loading → Loaded → Loading More → End |
+| Infinite list | Loading → Loaded → Loading More → End / Error (keep rows) |
+| Pagination | Page → Next page → Error |
 
 ### 04 — Communication
 
 | Component | States |
 |---|---|
-| Chat message | Sending → Sent → Delivered → Read |
-| Comment | Draft → Posting → Posted |
-| Notification | Unread → Read → Archived |
 | Invite | Pending → Sent → Accepted/Expired |
 
 ### 05 — Transactions
@@ -275,7 +247,7 @@ Rather than making 30 unrelated components, I'd create **families of patterns**.
 | Component | States |
 |---|---|
 | Payment | Ready → Processing → Success/Failed |
-| Checkout | Cart → Validating → Processing → Complete |
+| Checkout | Cart → Validating → Processing → Complete / Declined / Timed out |
 | Subscription | Trial → Processing → Active → Cancelled |
 | Refund | Requested → Processing → Complete/Failed |
 
@@ -286,11 +258,10 @@ This is where your **offline state** becomes particularly useful.
 | Component | Offline behavior |
 |---|---|
 | Note | Queue changes |
-| Chat | Queue message |
-| Upload | Pause/resume |
+| Upload | Pause/resume, cancel vs success |
 | Form | Preserve draft |
 | Dashboard | Show stale data |
-| Search | Show cached results |
+| Table | Keep the last good page while a refresh fails |
 
 ---
 
@@ -339,4 +310,4 @@ Then visually:
 
 That makes the project much more valuable than a collection of animated UI states. You're demonstrating that you can think about **behavior first, then implementation, then visual feedback**.
 
-For your project, I'd start with **10 components**: **Note, File Upload, Search, Payment, Chat Message, Data Table, Like, Delete/Undo, Download, and Form**. Together they cover most of the state-machine patterns you'll encounter in product UI.
+For your project, I'd start with the note editor and these five: **Checkout, File upload, Data table, Infinite list, and Delete/undo**. A wrong transition is easy to ship on each of them, because the action can succeed halfway or an older request can resolve last.
